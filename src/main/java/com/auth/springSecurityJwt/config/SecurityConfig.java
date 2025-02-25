@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
@@ -25,8 +26,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.addFilterBefore(new MyFilter3(), BasicAuthenticationFilter.class); //  BasicAuthenticationFilter이 시작되기 전에 MyFilter3를 실행하겠다는 뜻
-        http.addFilterAfter(new MyFilter4(), BasicAuthenticationFilter.class); //  BasicAuthenticationFilter이 시작되기 전에 MyFilter4를 실행하겠다는 뜻
+        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter3를 실행하겠다는 뜻
+        http.addFilterAfter(new MyFilter4(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter4를 실행하겠다는 뜻
 
         http
                 .csrf(AbstractHttpConfigurer::disable)         // csrf 비활성화
