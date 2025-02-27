@@ -2,6 +2,8 @@ package com.auth.springSecurityJwt.config.jwt;
 
 import com.auth.springSecurityJwt.config.auth.PrincipalDetails;
 import com.auth.springSecurityJwt.model.User;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 // 스프링 시큐리티에 UsernamePasswordAuthenticationFilter가 있는데
@@ -68,7 +71,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("successfulAuthentication 실행됨 : 인증이 완료되었다는 뜻");
+        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
 
-        super.successfulAuthentication(request, response, chain, authResult);
+        // RSA방식이 아닌 Hash 암호방식
+        String jwtToken = JWT.create()
+                .withSubject(principalDetails.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + (60000 * 10)))    // 토큰 만료 시간 [JwtProperties.EXPIRATION_TIME] (단위는 밀리세컨드)
+                .withClaim("id", principalDetails.getUser().getId())
+                .withClaim("username", principalDetails.getUser().getUsername())
+                .sign(Algorithm.HMAC512("cos"));  // 서버만 알고 있는 secret값 [JwtProperties.SECRET]
+
+        log.info("jwtToken : " + jwtToken);
+
+        response.addHeader("Authorization", "Bearer " + jwtToken);
     }
 }
