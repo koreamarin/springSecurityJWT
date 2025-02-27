@@ -7,6 +7,7 @@ import com.auth.springSecurityJwt.filter.MyFilter4;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,9 +28,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 
-        AuthenticationManager authenticationManager =  http.getSharedObject(AuthenticationManager.class);
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+//        AuthenticationManager authenticationManager =  http.getSharedObject(AuthenticationManager.class);
 
         http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter3를 실행하겠다는 뜻
         http.addFilterAfter(new MyFilter4(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter4를 실행하겠다는 뜻

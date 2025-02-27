@@ -3,6 +3,7 @@ package com.auth.springSecurityJwt.config.auth;
 import com.auth.springSecurityJwt.model.User;
 import com.auth.springSecurityJwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,14 +13,16 @@ import org.springframework.stereotype.Service;
 // 정확히는 authenticationManager로 로그인을 진행하면 PrincipalDetailsService가 호출됨
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PrincipalDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("PrintcipalDetailsService의 loadUserByUsername()");
+        log.info("PrintcipalDetailsService의 loadUserByUsername()");
         User userEntity = userRepository.findByUsername(username);
+        log.info("userEntity: " + userEntity);
         return new PrincipalDetails(userEntity);
     }
 }
