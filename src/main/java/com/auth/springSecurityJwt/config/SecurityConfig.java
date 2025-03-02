@@ -1,9 +1,11 @@
 package com.auth.springSecurityJwt.config;
 
 import com.auth.springSecurityJwt.config.jwt.JwtAuthenticationFilter;
+import com.auth.springSecurityJwt.config.jwt.JwtAuthorizationFilter;
 import com.auth.springSecurityJwt.filter.MyFilter1;
 import com.auth.springSecurityJwt.filter.MyFilter3;
 import com.auth.springSecurityJwt.filter.MyFilter4;
+import com.auth.springSecurityJwt.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,9 +24,11 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private final CorsFilter corsFilter;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(CorsFilter corsFilter) {
+    public SecurityConfig(CorsFilter corsFilter, UserRepository userRepository) {
         this.corsFilter = corsFilter;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -36,8 +40,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 //        AuthenticationManager authenticationManager =  http.getSharedObject(AuthenticationManager.class);
 
-        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter3를 실행하겠다는 뜻
-        http.addFilterAfter(new MyFilter4(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter4를 실행하겠다는 뜻
+//        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter3를 실행하겠다는 뜻
+//        http.addFilterAfter(new MyFilter4(), SecurityContextPersistenceFilter.class); //  SecurityContextPersistenceFilter이 시작되기 전에 MyFilter4를 실행하겠다는 뜻
 
         http
                 .csrf(AbstractHttpConfigurer::disable)         // csrf 비활성화
@@ -46,6 +50,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)    // 폼 로그인 비활성화
                 .httpBasic(AbstractHttpConfigurer::disable)    // http Basic 인증 비활성화
                 .addFilter(new JwtAuthenticationFilter(authenticationManager))   // JwtAuthenticationFilter를 추가하여 UsernamePasswordAuthenticationFilter를 대체함
+                .addFilterBefore(new JwtAuthorizationFilter(authenticationManager, userRepository), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/v1/user/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_MANAGER", "ROLE_ADMIN")
